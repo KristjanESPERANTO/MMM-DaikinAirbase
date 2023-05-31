@@ -1,5 +1,5 @@
 {
-  "TITLE": "MMM-Daikin",
+  "TITLE": "MMM-DaikinAirbase",
   "LOADING": "Loading...",
   "ON": "On",
   "OFF": "Off",
@@ -7,5 +7,12 @@
   "HEAT": "Heat",
   "COOL": "Cool",
   "DEHUM": "Dehum",
-  "FAN": "Fan"
+  "FAN": "Fan",
+  "FAN_AUTO": "Auto",
+  "FAN_LOW": "Low",
+  "FAN_MID": "Mid",
+  "FAN_HIGH": "High",
+  "FAN_LOW_AUTO": "Low/Auto",
+  "FAN_MID_AUTO": "Mid/Auto",
+  "FAN_HIGH_AUTO": "High/Auto"
 }

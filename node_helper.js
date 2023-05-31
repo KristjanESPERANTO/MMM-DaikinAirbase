@@ -1,104 +1,88 @@
 /* Magic Mirror
- * Node Helper: MMM-Daikin
+ * Node Helper: MMM-DaikinAirbase
  *
- * By Kyrill Meyer
+ * By Matt Thurling
  * MIT Licensed.
  */
 
-const NodeHelper = require('node_helper');
-const DaikinAC = require('daikin-controller');
-
-const REQUIRED_FIELDS = ['ipAddress'];
-const DAIKIN_STATS = ['bin', 'name', 'batPct', 'cleanMissionStatus'];
+var http = require('http');
+var NodeHelper = require("node_helper");
 
 module.exports = NodeHelper.create({
-	start: function() {
-		const self = this;
 
-		self.started = false;
-		self.config = [];
-		self.stats = {};
-    console.log ("MMM-Daikin NodeHelper created...");
-    
-	},
-
-	socketNotificationReceived: function(notification, payload) {
-		const self = this;
-    //console.log ("MMM-Daikin socketNotificationReceived");
-    
-		switch (notification) {
-			case 'START':
-				self.handleStartNotification(payload);
-		}
-	},
-
-	handleStartNotification: function(payload) {
-		const self = this;
-    console.log ("MMM-Daikin handleStartNotification");
-
-	//	if (self.started) {
-	//		return;
-	//	}
-
-		self.config = payload;
-    self.started = true;
-    
-    self.updateStats();
-
-    
+    start: function() {
+        console.log("Starting node helper: " + this.name);
     },
-    
-    updateStats: function() {
-		const self = this;
-    
-    var options = {'logger': console.log}; // optional logger method to get debug logging
-    
-    var daikin =  new DaikinAC.DaikinAC(
-     self.config.ipAddress,
-     options,
-     function(err_gen) {
-    // daikin.currentCommonBasicInfo - contains automatically requested basic device data
-    // daikin.currentACModelInfo - contains automatically requested device model data
-    if (err_gen) {
-        //console.error(err_gen);
-        //self.sendSocketNotification('ERROR', err_gen);
-        //err_gen = null;
-        self.scheduleUpdate();
-    }
-    else {
-        //console.log("BASIC: "+JSON.stringify(daikin.currentCommonBasicInfo));
-        self.started = true;
-        daikin.setUpdate(self.config.updateInterval, function(err) {
-            // catch error
-            if (err) {
-              //console.error(err);
-              //self.sendSocketNotification('ERROR', err);
-              daikin.stopUpdate();
-              self.scheduleUpdate();
-            }
-            else {
-              console.log(JSON.stringify(daikin.currentACControlInfo));
-              console.log(JSON.stringify(daikin.currentACSensorInfo));
-              Object.assign(self.stats, {
-				        name: daikin.currentCommonBasicInfo.name,
-                power: daikin.currentACControlInfo.power,
-                mode: daikin.currentACControlInfo.mode,
-                intemp: daikin.currentACSensorInfo.indoorTemperature,
-                outtemp: daikin.currentACSensorInfo.outdoorTemperature,  
-                targettemp: daikin.currentACControlInfo.targetTemperature,
-                fanrate: daikin.currentACControlInfo.fanRate,
-			       });
-             //console.log("MMM-DAIKIN: Sending STATS...");
-             self.sendSocketNotification('STATS', self.stats);
-            }        
-        });
-    }
-    });
-	}, 
-  
-  scheduleUpdate() {
-		const self = this;
-    setTimeout(function(){ self.updateStats(); }, self.config.updateInterval);
-	},
 
+    socketNotificationReceived: function(notification, payload) {
+        const self = this;
+
+        if(notification === "GET_DAIKIN_AIRBASE_STATS") {
+            self.started = true;
+            if (!payload || !payload.ipAddress) {
+                self.sendSocketNotification("DAIKIN_AIRBASE_ERROR", "ipAddress not configured!");
+                return;
+            }
+            
+            const getBasicInfo = self.getDaikinAirbasePromise(payload.ipAddress, '/skyfi/common/basic_info', 'basicInfo');
+            const getControlInfo = self.getDaikinAirbasePromise(payload.ipAddress, '/skyfi/aircon/get_control_info', 'controlInfo');
+            const getSensorInfo = self.getDaikinAirbasePromise(payload.ipAddress, '/skyfi/aircon/get_sensor_info', 'sensorInfo');
+
+            Promise.all([getBasicInfo, getControlInfo, getSensorInfo]).then(returnedStats => {
+                const processedInfo = {};
+                for (const data of returnedStats) {
+                    if (data.basicInfo) {
+                        // the name is returned as a set of hex decimals
+                        const nameCharHexArray = data.basicInfo.name.substring(1).split('%');
+                        var translatedName = '';
+                        for (character of nameCharHexArray) {
+                            translatedName += String.fromCharCode(parseInt(character, 16));
+                        }
+                        processedInfo.name = translatedName;
+                    }
+                    if (data.controlInfo) {
+                        processedInfo.power = data.controlInfo.pow;
+                        processedInfo.mode = data.controlInfo.mode;
+                        processedInfo.targetTemperature = data.controlInfo.stemp;
+                        processedInfo.fanRate = data.controlInfo.f_rate;
+                    }
+                    if (data.sensorInfo) {
+                        processedInfo.indoorTemperature = data.sensorInfo.htemp;
+                        processedInfo.outdoorTemperature = data.sensorInfo.otemp;
+                    }
+                }
+                self.sendSocketNotification('DAIKIN_AIRBASE_STATS', processedInfo);
+            })
+        }
+    },
+
+    getDaikinAirbasePromise: function(address, apiPath, resultName) {
+        return new Promise(resolve => {
+                const options = {
+                    host: address,
+                    method: 'GET',
+                    path: apiPath,
+                    headers: {
+                        'Accept': '*/*',
+                    }
+                };
+                const dataReq = http.request(options, (response) => {
+                    if (response.statusCode != 200) {
+                        console.log("data request error: " + response.statusCode);
+                        this.sendSocketNotification("DAIKIN_AIRBASE_ERROR", "Could not retrieve " + resultName);
+                    }
+                    response.on('data', (data) => {
+                        var returnObject = {};
+                        // convert the key value pairs to json
+                        returnObject[resultName] = JSON.parse('{"' + new String(data).replace(/,/g, '", "').replace(/=/g, '": "') + '"}');
+                        resolve(returnObject);
+                    });
+                });
+                dataReq.on('error', (error) => {
+                    console.log("Failed to retrieve " + resultName + "! error: " + error);
+                    this.sendSocketNotification("DAIKIN_AIRBASE_ERROR", "Could not retrieve " + resultName);
+                });
+                dataReq.end();
+            });
+    },
 });
