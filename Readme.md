@@ -19,7 +19,7 @@ To use this module, add the following configuration block to the modules array i
 var config = {
   modules: [
     {
-      module: 'MMM-Daikin',
+      module: 'MMM-DaikinAirbase',
       position: 'top_right',
       config: {
           ipAddress: '10.1.1.99', // replace with the ip address of your airbase
