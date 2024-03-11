@@ -115,7 +115,7 @@
     },
 
     renderPower() {
-        if (this.stats.power) {
+        if (this.stats.power !== "0") {
             return this.renderItem("status-on", this.translate('ON'), !this.stats.power);
         }
         return this.renderItem("status-off", this.translate('OFF'), !this.stats.power);
