@@ -1,22 +1,19 @@
 # MMM-DaikinAirbase
 
-A module for [MagicMirror²](https://github.com/MichMich/MagicMirror/) designed to pull data from a Daikin AirBase wifi controller and display it on the mirror. As far as I can tell this device is only in the Australian/New Zealand market so this module would only be relevant to users there. Essentially if you use the Daikin Airbase app on your phone to access your air conditioner then this module should work with it.
+A module for [MagicMirror²](https://github.com/MagicMirrorOrg/MagicMirror/) designed to pull data from a Daikin AirBase wifi controller and display it on the mirror. As far as I can tell this device is only in the Australian/New Zealand market so this module would only be relevant to users there. Essentially if you use the Daikin Airbase app on your phone to access your air conditioner then this module should work with it.
 
-This module was originally forked from the [MMM-Daikin](https://github.com/kymeyer/MMM-daikin/) module built by Kyrill Meyer which made use of a node module for accessing the Daikin device which unfortunately did not support the Daikin Airbase. Luckily the Airbase API is fairly basic so not too difficult to get working.
-
-
-![Alt text](/screenshots/DaikinAirbase.png?raw=true "Screenshot")
+![Screenshot](screenshots/DaikinAirbase.png)
 
 ## Installation
 
-Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/matt-thurling/MMM-DaikinAirbase.git`
+Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/matt-thurling/MMM-DaikinAirbase`
 
 ## Using the module
 
 To use this module, add the following configuration block to the modules array in the `config/config.js` file:
 
 ```js
-var config = {
+let config = {
   modules: [
     {
       module: 'MMM-DaikinAirbase',
@@ -40,4 +37,4 @@ var config = {
 
 ## Attribution
 
-This module was originally forked from the [MMM-Daikin](https://github.com/kymeyer/MMM-daikin/) module built by Kyrill Meyer.
+This module was originally forked from the [MMM-Daikin](https://github.com/kymeyer/MMM-daikin/) module built by Kyrill Meyer which made use of a node module for accessing the Daikin device which unfortunately did not support the Daikin Airbase. Luckily the Airbase API is fairly basic so not too difficult to get working.

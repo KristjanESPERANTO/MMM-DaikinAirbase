@@ -8,10 +8,10 @@
 
  * MIT Licensed.
  */
- 
- Module.register('MMM-DaikinAirbase', {
+
+Module.register("MMM-DaikinAirbase", {
     defaults: {
-        ipAddress: 'DaikinAirbase',
+        ipAddress: "DaikinAirbase",
         refreshInterval: 1000 * 60 * 1, // 1 minute
         animationSpeed: 1 * 1000, // 1 seconds
     },
@@ -40,29 +40,29 @@
         "target-temp": "fa-crosshairs",
     },
 
-    start() {
-        Log.info("Starting module: " + this.name);
+    start () {
+        Log.info(`Starting module: ${this.name}`);
 
         this.loaded = false;
         this.stats = {};
         this.getDaikinAirbaseStats();
 
         const self = this;
-        setInterval(function() {
+        setInterval(() => {
             self.getDaikinAirbaseStats();
             self.updateDom();
         }, this.config.refreshInterval);
     },
 
-    getDaikinAirbaseStats() {
+    getDaikinAirbaseStats () {
         Log.info("MMM-DaikinAirbase: getting stats");
         this.sendSocketNotification(
-            'GET_DAIKIN_AIRBASE_STATS',
+            "GET_DAIKIN_AIRBASE_STATS",
             this.config
         );
     },
 
-    getDom() {
+    getDom () {
         if (this.error) {
             return this.renderError();
         }
@@ -72,78 +72,78 @@
         return this.renderStats();
     },
 
-    renderError() {
-        let wrapper = document.createElement('div');
-        wrapper.className = 'dimmed light small';
+    renderError () {
+        const wrapper = document.createElement("div");
+        wrapper.className = "dimmed light small";
         wrapper.innerHTML = this.error;
         return wrapper;
     },
 
-    renderLoading() {
-        let wrapper = document.createElement('div');
-        wrapper.className = 'dimmed light small';
-        wrapper.innerHTML = this.translate('LOADING');
+    renderLoading () {
+        const wrapper = document.createElement("div");
+        wrapper.className = "dimmed light small";
+        wrapper.innerHTML = this.translate("LOADING");
         return wrapper;
     },
 
-    renderStats() {
-        let wrapper = document.createElement('table');
-        wrapper.className = 'small';
+    renderStats () {
+        const wrapper = document.createElement("table");
+        wrapper.className = "small";
         wrapper.innerHTML = `
-            <tr>
-                <td class="name">${this.stats.name}</td>
-                ${this.renderPower()}
-                ${this.renderMode()}
-                ${this.renderItem("fan-speed", this.translate(this.fanRateValue[this.stats.fanRate]), !this.stats.power)}
-            </tr>
-            <tr>
-                <td/>
-                ${this.renderItem("outdoor-temp", this.stats.outdoorTemperature + "°")}
-                ${this.renderItem("indoor-temp", this.stats.indoorTemperature + "°")}
-                ${this.renderItem("target-temp", this.stats.targetTemperature + "°", !this.stats.power)}
-            </tr>
-        `;
+          <tr>
+              <td class="name">${this.stats.name}</td>
+              ${this.renderPower()}
+              ${this.renderMode()}
+              ${this.renderItem("fan-speed", this.translate(this.fanRateValue[this.stats.fanRate]), !this.stats.power)}
+          </tr>
+          <tr>
+              <td/>
+              ${this.renderItem("outdoor-temp", `${this.stats.outdoorTemperature}°`)}
+              ${this.renderItem("indoor-temp", `${this.stats.indoorTemperature}°`)}
+              ${this.renderItem("target-temp", `${this.stats.targetTemperature}°`, !this.stats.power)}
+          </tr>
+      `;
         return wrapper;
     },
 
-    renderItem(iconToUse, value, dimmed) {
+    renderItem (iconToUse, value, dimmed) {
         return `
-                <td class="bin title ${dimmed ? "dimmed" : "bright"}">
-                    <i class="fas ${this.icons[iconToUse]}"></i> ${value}
-                </td>
-            `;
+              <td class="bin title ${dimmed ? "dimmed" : "bright"}">
+                  <i class="fas ${this.icons[iconToUse]}"></i> ${value}
+              </td>
+          `;
     },
 
-    renderPower() {
+    renderPower () {
         if (this.stats.power !== "0") {
-            return this.renderItem("status-on", this.translate('ON'), !this.stats.power);
+            return this.renderItem("status-on", this.translate("ON"), !this.stats.power);
         }
-        return this.renderItem("status-off", this.translate('OFF'), !this.stats.power);
+        return this.renderItem("status-off", this.translate("OFF"), !this.stats.power);
     },
 
-    renderMode() {
+    renderMode () {
         switch (this.stats.mode) {
             case "0":
-                return this.renderItem("mode-fan", this.translate('FAN'), !this.stats.power);
+                return this.renderItem("mode-fan", this.translate("FAN"), !this.stats.power);
             case "1":
-                return this.renderItem("mode-heat", this.translate('HEAT'), !this.stats.power);
+                return this.renderItem("mode-heat", this.translate("HEAT"), !this.stats.power);
             case "2":
-                return this.renderItem("mode-cool", this.translate('COOL'), !this.stats.power);
+                return this.renderItem("mode-cool", this.translate("COOL"), !this.stats.power);
             case "3":
-                return this.renderItem("mode-auto", this.translate('AUTO'), !this.stats.power);
+                return this.renderItem("mode-auto", this.translate("AUTO"), !this.stats.power);
             case "7":
-                return this.renderItem("mode-dehumidify", this.translate('DEHUM'), !this.stats.power);
+                return this.renderItem("mode-dehumidify", this.translate("DEHUM"), !this.stats.power);
         }
     },
 
-    socketNotificationReceived(notification, payload) {
+    socketNotificationReceived (notification, payload) {
         switch (notification) {
-            case 'DAIKIN_AIRBASE_STATS':
-                this.error = '';
+            case "DAIKIN_AIRBASE_STATS":
+                this.error = "";
                 this.loaded = true;
                 this.stats = payload;
                 break;
-            case 'DAIKIN_AIRBASE_ERROR':
+            case "DAIKIN_AIRBASE_ERROR":
                 this.error = payload;
                 break;
         }
@@ -151,13 +151,13 @@
         this.updateDom(this.config.animationSpeed);
     },
 
-    getScripts() {
+    getScripts () {
         return [];
     },
 
-    getTranslations() {
+    getTranslations () {
         return {
-            en: 'translations/en.json',
+            en: "translations/en.json"
         };
-    },
+    }
 });
