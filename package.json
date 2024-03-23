@@ -1,0 +1,24 @@
+{
+  "name": "mmm-daikinairbase",
+  "version": "1.0.0",
+  "description": "Display data from a Daikin AirBase wifi controller and display it on MagicMirror².",
+  "main": "MMM-DaikinAirbase.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matt-thurling/MMM-DaikinAirbase.git"
+  },
+  "keywords": [
+    "MagicMirror",
+    "Daikin",
+    "Airbase"
+  ],
+  "author": "Matt Thurling",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matt-thurling/MMM-DaikinAirbase/issues"
+  },
+  "homepage": "https://github.com/matt-thurling/MMM-DaikinAirbase#readme"
+}
